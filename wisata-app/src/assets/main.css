@@ -1,0 +1,26 @@
+/* Global Reset Hardmode 💥 */
+* {
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
+html,
+body {
+  width: 100% !important;
+  height: 100% !important;
+  overflow-x: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+img,
+div,
+section,
+header,
+footer,
+main {
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}

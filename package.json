@@ -1,0 +1,9 @@
+{
+  "name": "2025-may-technical-test",
+  "version": "1.0.0",
+  "dependencies": {
+    "@types/node": "^22.13.11",
+    "axios": "^1.9.0",
+    "marked": "^15.0.12"
+  }
+}
