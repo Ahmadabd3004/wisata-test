@@ -106,13 +106,14 @@ function replaceInstagramCustomTag(html) {
   return html.replace(
     /<InstagramEmbed\s+url="([^"]+)"\s*\/?>/gi,
     (match, url) => {
-      const m = url.match(/instagram\.com\/p\/([^/?]+)/i);
-      const shortcode = m ? m[1] : "";
-      if (!shortcode) return "";
+      const m = url.match(/instagram\.com\/(p|reel)\/([^/?]+)/i);
+      const type = m ? m[1] : "";
+      const shortcode = m ? m[2] : "";
+      if (!shortcode || !type) return "";
       return `
         <div class="instagram-embed-wrapper">
           <iframe
-            src="https://www.instagram.com/p/${shortcode}/embed"
+            src="https://www.instagram.com/${type}/${shortcode}/embed"
             allowtransparency="true"
             allowfullscreen="true"
             scrolling="no"
