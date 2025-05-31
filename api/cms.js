@@ -1,6 +1,4 @@
-// File: nama-proyek-starter-anda/api/cms.js
-
-import { apiClient } from "./client"; // Mengimpor apiClient dari client.js
+import { apiClient } from "./client";
 
 /**
  * TASK: use `apiClient` to fetch list of diary content
@@ -19,18 +17,17 @@ export async function getDiaryFeed() {
   try {
     const response = await apiClient.get("/cms/diary", {
       params: {
-        id: ids, // Axios akan mengubah array ini menjadi id=X&id=Y...
+        id: ids,
         status: "posted",
       },
     });
-    // Berdasarkan respons Postman Anda, data yang relevan ada di `response.data.content`
     return response.data.content;
   } catch (error) {
     console.error(
       "Error fetching diary feed:",
       error.response ? error.response.data : error.message
     );
-    throw error; // Lempar error agar bisa ditangani di komponen Vue
+    throw error;
   }
 }
 
@@ -59,6 +56,6 @@ export async function getDiaryContentById(id) {
       `Error fetching diary content for ID ${id}:`,
       error.response ? error.response.data : error.message
     );
-    throw error; // Lempar error agar bisa ditangani di komponen Vue
+    throw error;
   }
 }

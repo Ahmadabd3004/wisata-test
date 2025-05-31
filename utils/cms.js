@@ -1,15 +1,8 @@
-// File: WISATAAPP/utils/cms.js
-
 import { marked } from "marked";
 
-// --- Konfigurasi Marked ---
-// Ini adalah konfigurasi yang tepat untuk memastikan Markdown terurai dengan baik.
-// 'breaks: true' akan mengonversi \n tunggal menjadi <br>.
-// 'gfm: true' mengaktifkan GitHub Flavored Markdown (penting untuk banyak sintaks).
 marked.setOptions({
-  breaks: true, // PENTING: Konversi \n tunggal menjadi <br>
-  gfm: true, // PENTING: Mengaktifkan fitur-fitur Markdown yang lebih kaya
-  // highlight: function(code, lang) { ... }, // Tambahkan jika ada syntax highlighting code blocks
+  breaks: true,
+  gfm: true,
 });
 
 const CDN_WISATA_URL = "https://cdn.wisata.app";
@@ -90,6 +83,85 @@ export function getDiaryContentSEOAttributes(contentData) {
   };
 }
 
+function replaceTiktokCustomTag(html) {
+  return html.replace(/<TiktokEmbed\s+url="([^"]+)"\s*\/?>/gi, (match, url) => {
+    const m = url.match(/\/video\/(\d+)/);
+    const videoId = m ? m[1] : "";
+    if (!videoId) return "";
+    return `
+        <div class="tiktok-embed-wrapper">
+          <iframe
+            src="https://www.tiktok.com/player/v1/${videoId}?music_info=1&description=1"
+            width="100%" height="540"
+            frameborder="0"
+            allowfullscreen
+            scrolling="no"
+            style="border-radius:16px;max-width:420px;margin:1.5em auto;display:block;background:#000;"
+          ></iframe>
+        </div>
+      `;
+  });
+}
+function replaceInstagramCustomTag(html) {
+  return html.replace(
+    /<InstagramEmbed\s+url="([^"]+)"\s*\/?>/gi,
+    (match, url) => {
+      const m = url.match(/instagram\.com\/p\/([^/?]+)/i);
+      const shortcode = m ? m[1] : "";
+      if (!shortcode) return "";
+      return `
+        <div class="instagram-embed-wrapper">
+          <iframe
+            src="https://www.instagram.com/p/${shortcode}/embed"
+            allowtransparency="true"
+            allowfullscreen="true"
+            scrolling="no"
+            style="width:100%; min-width:320px; max-width:540px; border-radius:16px; background:#fff; margin: 1.5em auto; display:block;"
+            frameborder="0"
+          ></iframe>
+        </div>
+      `;
+    }
+  );
+}
+function replaceTwitterCustomTag(html) {
+  return html.replace(
+    /<TwitterEmbed\s+url="([^"]+)"\s*\/?>/gi,
+    (match, url) => {
+      if (!url) return "";
+      return `
+        <div class="twitter-embed-wrapper">
+          <blockquote class="twitter-tweet">
+            <a href="${url}"></a>
+          </blockquote>
+        </div>
+      `;
+    }
+  );
+}
+function replaceYoutubeCustomTag(html) {
+  return html.replace(
+    /<YoutubeEmbed\s+url="([^"]+)"\s*\/?>/gi,
+    (match, url) => {
+      if (!url) return "";
+      return `
+        <div class="youtube-embed-wrapper">
+          <iframe
+            src="${url}"
+            title="YouTube video player"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen
+            width="100%" height="360"
+            style="aspect-ratio: 16/9; border-radius: 16px; background:#000; margin: 1.5em 0; display:block;"
+          ></iframe>
+        </div>
+      `;
+    }
+  );
+}
+
 /**
  * TASK: Convert diary content to renderable data (HANYA TEKS).
  *
@@ -97,25 +169,18 @@ export function getDiaryContentSEOAttributes(contentData) {
  * Hanya menampilkan teks murni dari konten Markdown.
  *
  * @param {Object} contentData - Objek data konten diary dari API, berisi properti `content` (MDX).
- * @returns {string} Konten HTML yang siap dirender, hanya berisi teks.
+ * @returns {string}
  */
 export function renderDiaryContent(contentData) {
   if (!contentData || !contentData.content) return "";
 
   let mdxContent = contentData.content;
 
-  mdxContent = mdxContent.replace(/\u200B/g, "");
-
-  mdxContent = mdxContent.replace(
-    /<(YoutubeEmbed|TiktokEmbed|InstagramEmbed|TwitterEmbed)\s+[^>]*\/>/g,
-    ""
-  );
-
-  mdxContent = mdxContent.replace(/!\[.*?\]\(.*?\)/g, "");
-
   let htmlResult = marked(mdxContent);
-
-  htmlResult = htmlResult.replace(/<img\s+[^>]*>/g, "");
+  htmlResult = replaceTiktokCustomTag(htmlResult);
+  htmlResult = replaceInstagramCustomTag(htmlResult);
+  htmlResult = replaceTwitterCustomTag(htmlResult);
+  htmlResult = replaceYoutubeCustomTag(htmlResult);
 
   return htmlResult;
 }
