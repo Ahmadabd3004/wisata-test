@@ -1,84 +1,5 @@
-<template>
-  <div class="detail-transition-box" ref="detailTransitionBox"></div>
-
-  <div class="detail-content-wrapper">
-    <div
-      v-if="loading"
-      class="loading-state vh-100 d-flex justify-content-center align-items-center"
-    >
-      <div class="spinner-border text-dark" style="width: 5rem; height: 5rem" role="status">
-        <span class="visually-hidden">Loading...</span>
-      </div>
-    </div>
-
-    <div
-      v-else-if="error"
-      class="error-state vh-100 d-flex justify-content-center align-items-center text-danger"
-    >
-      <p>Error loading content: {{ error }}</p>
-    </div>
-
-    <div v-else-if="currentArticle">
-      <div class="position-relative w-100" style="height: 40vh; min-height: 380px">
-        <img
-          :src="getOptimizedImage(currentArticle.meta.image, 'large')"
-          class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover"
-          style="filter: blur(10px); opacity: 1; z-index: 1"
-          alt="Background"
-        />
-
-        <div
-          class="h-100 w-100 position-absolute"
-          style="background-color: black; z-index: 9; opacity: 0.5"
-        ></div>
-        <div class="d-flex flex-column justify-content-center align-items-center w-100 h-100">
-          <img
-            :src="getOptimizedImage(currentArticle.meta.image, 'large')"
-            class="w-100 h-100 object-fit-cover"
-            style="z-index: 2; max-width: 1024px"
-            alt="Main"
-          />
-          <div
-            class="position-absolute text-white d-flex flex-column justify-content-center align-items-start px-5 pb-5 w-100"
-            style="z-index: 9999999999; bottom: 0; max-width: 1024px"
-          >
-            <img
-              src="/back-white.png"
-              alt="Back"
-              style="width: 50px"
-              class="back-btn"
-              @click="handleBack"
-            />
-            <br />
-            <span class="badge bg-light text-dark mb-2 p-2 type" style="font-family: 'Montserrat'"
-              >Artikel</span
-            >
-            <h1 class="display-5 fw-bold title w-100" style="font-family: 'Montserrat'">
-              {{ currentArticle.meta.title }}
-            </h1>
-            <small class="text-light date" style="font-family: 'Montserrat'">{{
-              formatDate(currentArticle.created_dt)
-            }}</small>
-          </div>
-        </div>
-      </div>
-
-      <div class="d-flex flex-column justify-content-center align-items-center w-100 h-100">
-        <div
-          class="row px-5 py-4 article-content"
-          style="max-width: 1024px; line-height: 2"
-          v-html="renderedContent"
-        ></div>
-      </div>
-    </div>
-    <div v-else class="no-content-state vh-100 d-flex justify-content-center align-items-center">
-      <p>Content not found or invalid ID.</p>
-    </div>
-  </div>
-</template>
-
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, nextTick } from 'vue'
 import { gsap } from 'gsap'
 import { useRouter, useRoute } from 'vue-router'
 
@@ -164,6 +85,11 @@ const formatDate = (isoString) => {
 }
 
 onMounted(() => {
+  nextTick(() => {
+    if (window.twttr && window.twttr.widgets && window.twttr.widgets.load) {
+      window.twttr.widgets.load()
+    }
+  })
   if (route.params.id) {
     fetchArticle(route.params.id)
   } else {
@@ -244,6 +170,12 @@ watch(
     }
   },
 )
+watch(renderedContent, async () => {
+  await nextTick()
+  if (window.twttr && window.twttr.widgets && window.twttr.widgets.load) {
+    window.twttr.widgets.load()
+  }
+})
 
 const handleBack = () => {
   gsap.set(detailTransitionBox.value, {
@@ -268,6 +200,84 @@ const handleBack = () => {
   })
 }
 </script>
+<template>
+  <div class="detail-transition-box" ref="detailTransitionBox"></div>
+
+  <div class="detail-content-wrapper">
+    <div
+      v-if="loading"
+      class="loading-state vh-100 d-flex justify-content-center align-items-center"
+    >
+      <div class="spinner-border text-dark" style="width: 5rem; height: 5rem" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+
+    <div
+      v-else-if="error"
+      class="error-state vh-100 d-flex justify-content-center align-items-center text-danger"
+    >
+      <p>Error loading content: {{ error }}</p>
+    </div>
+
+    <div v-else-if="currentArticle">
+      <div class="position-relative w-100" style="height: 40vh; min-height: 380px">
+        <img
+          :src="getOptimizedImage(currentArticle.meta.image, 'large')"
+          class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover"
+          style="filter: blur(10px); opacity: 1; z-index: 1"
+          alt="Background"
+        />
+
+        <div
+          class="h-100 w-100 position-absolute"
+          style="background-color: black; z-index: 9; opacity: 0.5"
+        ></div>
+        <div class="d-flex flex-column justify-content-center align-items-center w-100 h-100">
+          <img
+            :src="getOptimizedImage(currentArticle.meta.image, 'large')"
+            class="w-100 h-100 object-fit-cover"
+            style="z-index: 2; max-width: 1024px"
+            alt="Main"
+          />
+          <div
+            class="position-absolute text-white d-flex flex-column justify-content-center align-items-start px-5 pb-5 w-100"
+            style="z-index: 9999999999; bottom: 0; max-width: 1024px"
+          >
+            <img
+              src="/back-white.png"
+              alt="Back"
+              style="width: 50px"
+              class="back-btn"
+              @click="handleBack"
+            />
+            <br />
+            <span class="badge bg-light text-dark mb-2 p-2 type" style="font-family: 'Montserrat'"
+              >Artikel</span
+            >
+            <h1 class="display-5 fw-bold title w-100" style="font-family: 'Montserrat'">
+              {{ currentArticle.meta.title }}
+            </h1>
+            <small class="text-light date" style="font-family: 'Montserrat'">{{
+              formatDate(currentArticle.created_dt)
+            }}</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex flex-column justify-content-center align-items-center w-100 h-100">
+        <div
+          class="row px-5 py-4 diary-content"
+          style="max-width: 1024px; line-height: 2"
+          v-html="renderedContent"
+        ></div>
+      </div>
+    </div>
+    <div v-else class="no-content-state vh-100 d-flex justify-content-center align-items-center">
+      <p>Content not found or invalid ID.</p>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .detail-transition-box {
@@ -432,5 +442,94 @@ const handleBack = () => {
 
 .article-content p {
   margin-bottom: 1.5em;
+}
+.diary-content {
+  font-family: 'Inter', Arial, sans-serif !important;
+  font-size: 1.05rem !important;
+  line-height: 1.9 !important;
+  color: #232323 !important;
+  background: #fff !important;
+  word-break: break-word !important;
+}
+
+.diary-content :deep(h1),
+.diary-content :deep(h2),
+.diary-content :deep(h3) {
+  font-weight: 700 !important;
+  margin-top: 2rem !important;
+  margin-bottom: 1rem !important;
+  line-height: 1.2 !important;
+}
+
+.diary-content :deep(p) {
+  margin-bottom: 1.2em !important;
+}
+
+.diary-content :deep(ul),
+.diary-content :deep(ol) {
+  margin-left: 1.3em !important;
+  margin-bottom: 1.2em !important;
+}
+
+.diary-content :deep(img) {
+  max-width: 100% !important;
+  border-radius: 12px !important;
+  margin: 1.5em 0 !important;
+  display: block !important;
+  height: auto !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.09) !important;
+}
+
+.diary-content :deep(blockquote) {
+  border-left: 4px solid #00d8cc !important;
+  background: #f6f9f8 !important;
+  color: #464646 !important;
+  padding: 1em 1.5em !important;
+  margin: 1.5em 0 !important;
+  border-radius: 8px !important;
+  font-style: italic !important;
+}
+
+.diary-content :deep(iframe),
+.diary-content :deep(embed) {
+  max-width: 100% !important;
+  width: 100% !important;
+  min-height: 360px !important;
+  border-radius: 12px !important;
+  margin: 2em 0 !important;
+  display: block !important;
+}
+
+.diary-content :deep(.twitter-tweet) {
+  margin: 2em auto !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+}
+
+.diary-content :deep(TiktokEmbed),
+.diary-content :deep(YoutubeEmbed),
+.diary-content :deep(InstagramEmbed),
+.diary-content :deep(TwitterEmbed) {
+  display: block !important;
+  margin: 2em 0 !important;
+  width: 100% !important;
+  /* min-height: 360px !important; */
+  border-radius: 12px !important;
+  background: #f9f9f9 !important;
+}
+
+.diary-content :deep(.twitter-embed-wrapper) {
+  width: 100% !important;
+  max-width: 540px !important;
+  margin: 2em auto !important;
+  display: flex !important;
+  justify-content: center !important;
+  background: transparent !important;
+}
+.diary-content :deep(.twitter-tweet) {
+  margin: 0 !important;
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  background: #fff !important;
 }
 </style>
